@@ -1,0 +1,212 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Vega graph visualization</title>
+
+<script src="bower_components/d3/d3.min.js"></script>
+<script src="bower_components/lodash/lodash.js"></script>
+<script src="bower_components/graphlib/dist/graphlib.core.js"></script>
+<script src="bower_components/dagre/dist/dagre.core.js"></script>
+<script src="bower_components/dagre-d3/dist/dagre-d3.core.js"></script>
+<script src="bower_components/vega/vega.js"></script>
+
+<style>
+svg {
+  border: 1px solid #999;
+  overflow: hidden;
+}
+
+.node {
+  white-space: nowrap;
+}
+
+.node rect,
+.node circle,
+.node ellipse {
+  stroke: #333;
+  fill: #fff;
+  stroke-width: 1.5px;
+}
+
+.edgePath path.path {
+  stroke: #333;
+  stroke-width: 1.5px;
+  fill: none;
+}
+
+.node text {
+  pointer-events: none;
+}
+</style>
+
+<style>
+h1, h2 {
+  color: #333;
+}
+
+textarea {
+  width: 100%;
+}
+
+label {
+  margin-top: 1em;
+  display: block;
+}
+</style>
+
+<body onLoad="tryDraw();">
+
+<h1>Vega Graph visualization</h1>
+
+<h2>Input</h2>
+
+<form>
+  <label for="inputVega">Vega</label>
+  <textarea id="inputVega" rows="5" style="display: block">
+{
+  "width": 400,
+  "height": 200,
+  "padding": {"top": 10, "left": 30, "bottom": 30, "right": 10},
+  "data": [
+    {
+      "name": "table",
+      "values": [
+        {"x": 1,  "y": 28}, {"x": 2,  "y": 55},
+        {"x": 3,  "y": 43}, {"x": 4,  "y": 91},
+        {"x": 5,  "y": 81}, {"x": 6,  "y": 53},
+        {"x": 7,  "y": 19}, {"x": 8,  "y": 87},
+        {"x": 9,  "y": 52}, {"x": 10, "y": 48},
+        {"x": 11, "y": 24}, {"x": 12, "y": 49},
+        {"x": 13, "y": 87}, {"x": 14, "y": 66},
+        {"x": 15, "y": 17}, {"x": 16, "y": 27},
+        {"x": 17, "y": 68}, {"x": 18, "y": 16},
+        {"x": 19, "y": 49}, {"x": 20, "y": 15}
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "ordinal",
+      "range": "width",
+      "domain": {"data": "table", "field": "x"}
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "range": "height",
+      "domain": {"data": "table", "field": "y"},
+      "nice": true
+    }
+  ],
+  "axes": [
+    {"type": "x", "scale": "x"},
+    {"type": "y", "scale": "y"}
+  ],
+  "marks": [
+    {
+      "type": "rect",
+      "from": {"data": "table"},
+      "properties": {
+        "enter": {
+          "x": {"scale": "x", "field": "x"},
+          "width": {"scale": "x", "band": true, "offset": -1},
+          "y": {"scale": "y", "field": "y"},
+          "y2": {"scale": "y", "value": 0},
+          "fill": {"value": "steelblue"}
+        }
+      }
+    }
+  ]
+}
+  </textarea>
+  <button onclick="tryDraw();">Parse</button>
+</form>
+
+<h2>Graph Visualization</h2>
+
+<div id="graph">
+  <svg width="100%" height="600">
+    <g/>
+  </svg>
+</div>
+
+<h2>Visualization</h2>
+<div id="vis"></div>
+
+<script>
+var specEl = document.querySelector("#inputVega");
+
+var svg = d3.select("#graph svg"),
+    inner = svg.select("g");
+
+// Set up zoom support
+var zoom = d3.behavior.zoom().on("zoom", function() {
+      inner.attr("transform", "translate(" + d3.event.translate + ")" +
+                                  "scale(" + d3.event.scale + ")");
+    });
+svg.call(zoom);
+
+// Create and configure the renderer
+var render = dagreD3.render();
+
+function tryDraw() {
+  var g = new dagreD3.graphlib.Graph()
+    .setGraph({})
+    .setDefaultEdgeLabel(function() { return {}; });
+
+  var spec = JSON.parse(specEl.innerHTML);
+  vg.parse.spec(spec, function(error, chart) {
+    var view = chart({el:"#vis"}).update();
+    var model = view.model();
+    buildGraph(model, g);
+
+    // Set margins, if not present
+    if (!g.graph().hasOwnProperty("marginx") &&
+        !g.graph().hasOwnProperty("marginy")) {
+      g.graph().marginx = 20;
+      g.graph().marginy = 20;
+    }
+
+    // render
+    render(inner, g);
+
+    inner.selectAll("g.node").on('mouseover', function(v){
+        n = g.node(v).data;
+        console.log(n);
+      })
+  });
+}
+
+function buildGraph(model, graph) {
+  var nodes = {};
+  var edges = {};
+
+  function visit(node) {
+    if (!(node._id in nodes)) {
+      nodes[node._id] = node;
+    }
+    node.listeners().forEach(function(child) {
+      var key = node._id + '_' + child._id;
+      if (!(key in edges)) {
+        edges[key] = [node, child];
+      }
+      visit(child);
+    });
+  }
+
+  visit(model.node());
+
+  Object.keys(nodes).forEach(function(id){
+    var node = nodes[id];
+    deps = (node.dependency('data').length ? 'd' : '') + (node.dependency('signals').length ? 's' : '') + (node.dependency('fields').length ? 'f' : '') + (node.dependency('scales').length ? 'c' : '');
+    graph.setNode(node._id, {label: node.constructor.name + ' ' + node._id + ' ' + deps, data: node});
+  });
+
+  Object.keys(edges).forEach(function(key){
+    var edge = edges[key];
+    graph.setEdge(edge[0]._id, edge[1]._id, {
+      lineInterpolate: 'basis'
+    });
+  });
+}
+</script>

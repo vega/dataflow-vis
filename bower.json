@@ -1,0 +1,23 @@
+{
+  "name": "vg-graph",
+  "main": "index.js",
+  "authors": [
+    "Dominik Moritz <domoritz@gmail.com>"
+  ],
+  "description": "",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "dagre-d3": "^0.4.17",
+    "vega": "^2.5.2"
+  }
+}
