@@ -1,6 +1,6 @@
 # Vega Dataflow Visualizations
 
-**Very experimental and not ready for general usage.**
+**Experimental and not ready for general usage**
 
 This visualizations shows the Vega dataflow graph after parsing. You can click on a node to see the node object in the developer console.
 
