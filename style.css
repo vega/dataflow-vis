@@ -1,0 +1,63 @@
+body {
+  margin: 0 30px;
+}
+
+svg {
+  border: 1px solid #999;
+  overflow: hidden;
+}
+
+.node {
+  white-space: nowrap;
+}
+
+.node rect,
+.node circle,
+.node ellipse {
+  stroke: #333;
+  fill: #fff;
+  stroke-width: 1.5px;
+}
+
+.node.scene rect {
+  stroke: red;
+  stroke-width: 2px;
+}
+.node.scale rect {
+  stroke: blue;
+  stroke-width: 2px;
+}
+.node.df rect {
+  stroke: orange;
+  stroke-width: 2px;
+}
+.node.transform rect {
+  stroke: darkgreen;
+  stroke-width: 2px;
+}
+
+.edgePath path.path {
+  stroke: #333;
+  stroke-width: 1.5px;
+  fill: none;
+}
+
+.node text {
+  pointer-events: none;
+}
+</style>
+
+<style>
+h1, h2 {
+  color: #333;
+}
+
+textarea {
+  width: 100%;
+  height: 500px;
+}
+
+label {
+  margin-top: 1em;
+  display: block;
+}
