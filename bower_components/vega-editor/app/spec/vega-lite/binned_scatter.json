@@ -1,0 +1,14 @@
+{
+  "mark": "point",
+  "encoding": {
+    "x": {"bin": true,"field": "Displacement","type": "quantitative"},
+    "y": {"bin": true,"field": "Miles_per_Gallon","type": "quantitative"},
+    "size": {
+      "field": "*",
+      "aggregate": "count",
+      "type": "quantitative",
+      "displayName": "Number of Records"
+    }
+  },
+  "data": {"url": "data/cars.json"}
+}

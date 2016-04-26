@@ -8,8 +8,13 @@
 <script src="bower_components/dagre/dist/dagre.core.js"></script>
 <script src="bower_components/dagre-d3/dist/dagre-d3.core.js"></script>
 <script src="bower_components/vega/vega.js"></script>
+<script src="bower_components/vega-editor/app/vega-specs.js"></script>
 
 <style>
+body {
+  margin: 0 50px;
+}
+
 svg {
   border: 1px solid #999;
   overflow: hidden;
@@ -45,6 +50,7 @@ h1, h2 {
 
 textarea {
   width: 100%;
+  height: 500px;
 }
 
 label {
@@ -60,6 +66,12 @@ label {
 <h2>Input</h2>
 
 <form>
+  <label>
+    Select spec
+    <select class="selectSpec">
+    </select>
+  </label>
+
   <label for="inputVega">Vega</label>
   <textarea id="inputVega" rows="5" style="display: block">
 {
@@ -119,7 +131,7 @@ label {
   ]
 }
   </textarea>
-  <button onclick="tryDraw();">Parse</button>
+  <button onclick="tryDraw();return false;">Parse</button>
 </form>
 
 <h2>Graph Visualization</h2>
@@ -135,6 +147,39 @@ label {
 
 <script>
 var specEl = document.querySelector("#inputVega");
+
+var getIndexes = function(obj) {
+  return Object.keys(obj).reduce(function(a, k) {
+    return a.concat(obj[k].map(function(d) { return d.name; }));
+  }, []);
+};
+
+var vgSel = d3.select(".selectSpec");
+vgSel.append('option').text('Custom');
+vgSel.selectAll("optgroup")
+      .data(Object.keys(VG_SPECS))
+     .enter().append('optgroup')
+      .attr('label', function(key) { return key; })
+     .selectAll('option.spec')
+      .data(function(key) { return VG_SPECS[key]; })
+     .enter().append('option')
+      .text(function(d) { return d.name; });
+
+vgSel.on('change', function() {
+  var sel = vgSel.node();
+  var idx = sel.selectedIndex;
+  var spec = d3.select(sel.options[idx]).datum();
+  if (idx > 0) {
+    d3.xhr('bower_components/vega-editor/app/spec/vega/' + spec.name + '.json', function(error, response) {
+      if (error) {
+        return console.error(error);
+      }
+      specEl.value = response.responseText;
+    });
+  } else {
+    specEl.value = '';
+  }
+});
 
 var svg = d3.select("#graph svg"),
     inner = svg.select("g");
@@ -154,7 +199,7 @@ function tryDraw() {
     .setGraph({})
     .setDefaultEdgeLabel(function() { return {}; });
 
-  var spec = JSON.parse(specEl.innerHTML);
+  var spec = JSON.parse(specEl.value);
   vg.parse.spec(spec, function(error, chart) {
     var view = chart({el:"#vis"}).update();
     var model = view.model();

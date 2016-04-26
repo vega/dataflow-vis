@@ -18,6 +18,7 @@
   ],
   "dependencies": {
     "dagre-d3": "^0.4.17",
-    "vega": "^2.5.2"
+    "vega": "^2.5.2",
+    "vega-editor": "https://github.com/vega/vega-editor/tarball/gh-pages"
   }
 }

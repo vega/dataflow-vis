@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+_site
+coverage
+LICENSE
+node_modules
+package.json
+temp
+README.md
+scripts

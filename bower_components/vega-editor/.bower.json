@@ -1,0 +1,14 @@
+{
+  "name": "gh-pages",
+  "_cacheHeaders": {
+    "ETag": "\"06fadeb6e35bc2dbd3c2b7936f36fef03e390748\"",
+    "Content-Length": "3697896",
+    "Content-Type": "application/x-gzip",
+    "Content-Disposition": "attachment; filename=vega-vega-editor-06fadeb.tar.gz"
+  },
+  "_release": "e-tag:06fadeb6e",
+  "_source": "https://github.com/vega/vega-editor/tarball/gh-pages",
+  "_target": "*",
+  "_originalSource": "https://github.com/vega/vega-editor/tarball/gh-pages",
+  "_direct": true
+}
