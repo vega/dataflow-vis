@@ -12,7 +12,7 @@
 
 <style>
 body {
-  margin: 0 50px;
+  margin: 0 30px;
 }
 
 svg {
@@ -30,6 +30,23 @@ svg {
   stroke: #333;
   fill: #fff;
   stroke-width: 1.5px;
+}
+
+.node.scene rect {
+  stroke: red;
+  stroke-width: 2px;
+}
+.node.scale rect {
+  stroke: blue;
+  stroke-width: 2px;
+}
+.node.df rect {
+  stroke: orange;
+  stroke-width: 2px;
+}
+.node.transform rect {
+  stroke: darkgreen;
+  stroke-width: 2px;
 }
 
 .edgePath path.path {
@@ -155,29 +172,30 @@ var getIndexes = function(obj) {
 };
 
 var vgSel = d3.select(".selectSpec");
-vgSel.append('option').text('Custom');
+vgSel.append("option").text("Custom");
 vgSel.selectAll("optgroup")
       .data(Object.keys(VG_SPECS))
-     .enter().append('optgroup')
-      .attr('label', function(key) { return key; })
-     .selectAll('option.spec')
+     .enter().append("optgroup")
+      .attr("label", function(key) { return key; })
+     .selectAll("option.spec")
       .data(function(key) { return VG_SPECS[key]; })
-     .enter().append('option')
+     .enter().append("option")
       .text(function(d) { return d.name; });
 
-vgSel.on('change', function() {
+vgSel.on("change", function() {
   var sel = vgSel.node();
   var idx = sel.selectedIndex;
   var spec = d3.select(sel.options[idx]).datum();
   if (idx > 0) {
-    d3.xhr('bower_components/vega-editor/app/spec/vega/' + spec.name + '.json', function(error, response) {
+    d3.xhr("bower_components/vega-editor/app/spec/vega/" + spec.name + ".json", function(error, response) {
       if (error) {
         return console.error(error);
       }
       specEl.value = response.responseText;
+      tryDraw();
     });
   } else {
-    specEl.value = '';
+    specEl.value = "";
   }
 });
 
@@ -195,7 +213,7 @@ svg.call(zoom);
 var render = dagreD3.render();
 
 function tryDraw() {
-  var g = new dagreD3.graphlib.Graph()
+  g = new dagreD3.graphlib.Graph()
     .setGraph({})
     .setDefaultEdgeLabel(function() { return {}; });
 
@@ -215,11 +233,56 @@ function tryDraw() {
     // render
     render(inner, g);
 
-    inner.selectAll("g.node").on('mouseover', function(v){
+    inner.selectAll("g.node").on("mouseover", function(v){
         n = g.node(v).data;
         console.log(n);
       })
   });
+}
+
+function getNodeType(node) {
+  var nodeType = node.constructor.name;
+  var nodeGroup = null;
+
+  // Scene Nodes
+  if (node instanceof vg.scene.Bounder) {
+    nodeType = "Bounder";
+    nodeGroup = "scene";
+  } else if (node instanceof vg.scene.GroupBuilder) {
+    nodeType = "Group Builder";
+    nodeGroup = "scene";
+  } else if(node instanceof vg.scene.Builder) {
+    nodeType = "Builder";
+    nodeGroup = "scene";
+  } else if (node instanceof vg.scene.Encoder) {
+    nodeType = "Encoder";
+    nodeGroup = "scene";
+  }
+  // scale
+  else if (node._def) {
+    nodeType = "Scale " + node._def.name;
+    nodeGroup = "scale";
+  }
+  // Dataflow Nodes
+  else if (node instanceof vg.dataflow.Collector) {
+    nodeType = "Collector";
+    nodeGroup = "df";
+  } else if (node instanceof vg.dataflow.Signal) {
+    nodeType = "Signal";
+    nodeGroup = "df";
+  }
+  // Other Nodes
+  else if (node._isDatasource == "input") {
+    nodeType = "Data Source Input";
+  } else if (node._isDatasource == "output") {
+    nodeType = "Data Source Output";
+  }
+
+  if (nodeType.toLowerCase() in vg.transforms) {
+    nodeGroup = "transform";
+  }
+
+  return {name: nodeType, group: nodeGroup};
 }
 
 function buildGraph(model, graph) {
@@ -231,7 +294,7 @@ function buildGraph(model, graph) {
       nodes[node._id] = node;
     }
     node.listeners().forEach(function(child) {
-      var key = node._id + '_' + child._id;
+      var key = node._id + "_" + child._id;
       if (!(key in edges)) {
         edges[key] = [node, child];
       }
@@ -241,16 +304,29 @@ function buildGraph(model, graph) {
 
   visit(model.node());
 
-  Object.keys(nodes).forEach(function(id){
+  Object.keys(nodes).forEach(function(id) {
     var node = nodes[id];
-    deps = (node.dependency('data').length ? 'd' : '') + (node.dependency('signals').length ? 's' : '') + (node.dependency('fields').length ? 'f' : '') + (node.dependency('scales').length ? 'c' : '');
-    graph.setNode(node._id, {label: node.constructor.name + ' ' + node._id + ' ' + deps, data: node});
+    var deps = [];
+    ["data", "signals", "fields", "scales"].forEach(function(dep) {
+      if (node.dependency(dep).length) {
+        deps.push(dep + ": " + node.dependency(dep));
+      }
+    });
+
+    if (deps.length) {
+      deps = ("<br>" + deps.join("<br> "));
+    } else {
+      deps = "";
+    }
+
+    var type = getNodeType(node);
+    graph.setNode(node._id, {labelType: 'html', label: "<strong>" + type.name + "</strong> <code>" + node._id + "</code> " + deps, class: type.group, data: node});
   });
 
   Object.keys(edges).forEach(function(key){
     var edge = edges[key];
     graph.setEdge(edge[0]._id, edge[1]._id, {
-      lineInterpolate: 'basis'
+      lineInterpolate: "basis"
     });
   });
 }
