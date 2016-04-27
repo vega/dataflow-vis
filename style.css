@@ -35,6 +35,13 @@ svg {
   stroke: darkgreen;
   stroke-width: 2px;
 }
+.node.data rect {
+  stroke: goldenrod;
+  stroke-width: 2px;
+}
+.node.signal ellipse {
+  fill: #eee;
+}
 
 .edgePath path.path {
   stroke: #333;

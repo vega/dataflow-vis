@@ -1,5 +1,9 @@
 var specEl = document.querySelector("#inputVega");
 
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 var getIndexes = function(obj) {
   return Object.keys(obj).reduce(function(a, k) {
     return a.concat(obj[k].map(function(d) { return d.name; }));
@@ -48,8 +52,8 @@ svg.call(zoom);
 var render = dagreD3.render();
 
 function tryDraw() {
-  g = new dagreD3.graphlib.Graph()
-    .setGraph({})
+  var g = new dagreD3.graphlib.Graph({compound:true})
+    .setGraph()
     .setDefaultEdgeLabel(function() { return {}; });
 
   var spec = JSON.parse(specEl.value);
@@ -81,13 +85,13 @@ function getNodeType(node) {
 
   // Scene Nodes
   if (node instanceof vg.scene.Bounder) {
-    nodeType = "Bounder";
+    nodeType = capitalizeFirstLetter(node._mark.marktype) + " Bounder";
     nodeGroup = "scene";
   } else if (node instanceof vg.scene.GroupBuilder) {
     nodeType = "Group Builder";
     nodeGroup = "scene";
   } else if(node instanceof vg.scene.Builder) {
-    nodeType = "Builder";
+    nodeType = capitalizeFirstLetter(node._def.type) + " Builder";
     nodeGroup = "scene";
   } else if (node instanceof vg.scene.Encoder) {
     nodeType = "Encoder";
@@ -107,10 +111,9 @@ function getNodeType(node) {
     nodeGroup = "df";
   }
   // Other Nodes
-  else if (node._isDatasource == "input") {
-    nodeType = "Data Source Input";
-  } else if (node._isDatasource == "output") {
-    nodeType = "Data Source Output";
+  else if (node.data) {
+    nodeType = "Data";
+    nodeGroup = "data";
   }
 
   if (nodeType.toLowerCase() in vg.transforms) {
@@ -124,6 +127,13 @@ function buildGraph(model, graph) {
   var nodes = {};
   var edges = {};
 
+  // get signals
+  for (signal in model._signals) {
+    var data = model._signals[signal];
+    graph.setNode(data._id, {labelType: "html", label: "<strong>" + signal + "</strong><code>" + data._id + "</code> ", class: "signal", data: data, shape: "ellipse", rank: 'min'});
+  }
+
+  // get nodes
   function visit(node) {
     if (!(node._id in nodes)) {
       nodes[node._id] = node;
@@ -142,11 +152,18 @@ function buildGraph(model, graph) {
   Object.keys(nodes).forEach(function(id) {
     var node = nodes[id];
     var deps = [];
-    ["data", "signals", "fields", "scales"].forEach(function(dep) {
+    ["data", "fields", "scales"].forEach(function(dep) {
       if (node.dependency(dep).length) {
         deps.push(dep + ": " + node.dependency(dep));
       }
     });
+
+    // add edges to signals
+    if (node.dependency("signals").length) {
+      node.dependency("signals").forEach(function(name) {
+        graph.setEdge(model.signal(name)._id, node._id);
+      });
+    }
 
     if (deps.length) {
       deps = ("<br>" + deps.join("<br> "));
@@ -155,7 +172,7 @@ function buildGraph(model, graph) {
     }
 
     var type = getNodeType(node);
-    graph.setNode(node._id, {labelType: 'html', label: "<strong>" + type.name + "</strong> <code>" + node._id + "</code> " + deps, class: type.group, data: node});
+    graph.setNode(node._id, {labelType: "html", label: "<strong>" + type.name + "</strong> <code>" + node._id + "</code> " + deps, class: type.group, data: node});
   });
 
   Object.keys(edges).forEach(function(key){
