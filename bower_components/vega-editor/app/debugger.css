@@ -2,18 +2,22 @@
 
 .btn_debug {
 	padding: 0px 5px;
-	color: #aaa;
+	color: #666;
   cursor: pointer;
 }
 
 .btn_mode {
 	padding-left: 5px;
-	color: #aaa;
+	color: #666;
   cursor: pointer;
 }
 
-.btn_mode.selected, .btn_debug.selected {
-	color: #4F99FC;
+.btn_debug.selected {
+	color: #00AA00;
+}
+
+.btn_mode.selected {
+  color: #4F99FC;
 }
 
 /* hide debugging tools unless in debug mode */
@@ -42,8 +46,9 @@
   top: 50vh;
   padding: 0px 2px;
   color: #aaa;
+  cursor: pointer;
 }
-.click_toggle_vis:hover { 
+.click_toggle_vis:hover {
   background: #eee;
 }
 
@@ -83,9 +88,6 @@
 
 /************************* Data Table *************************/
 /*************************** Table ****************************/
-#data {
-  width: 100px;
-}
 
 #header {
   overflow: scroll;
@@ -105,10 +107,11 @@
   overflow: scroll;
   border-collapse: collapse;
   font-size: 8pt;
+  cursor: pointer;
 }
 
-#data table::-webkit-scrollbar { 
-  display: none; 
+#data table::-webkit-scrollbar {
+  display: none;
 }
 
 .more {
@@ -188,13 +191,16 @@ span.name {
   position: absolute;
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
   font-size: 8pt;
-  pointer-events: none; 
+  pointer-events: none;
   cursor: default;
   padding: 4px;
   color: #8BB6C1;
   background-color: #F1F1F1;
   overflow: hidden;
   box-shadow: inset 0 0 2px #5997A6;
+  max-width: 700px;
+  max-height: 250px;
+  text-overflow: ellipsis;
 }
 
 /************************** Timeline **************************/
@@ -205,7 +211,7 @@ span.name {
 }
 
 /*************************** Table ****************************/
-#timeline, table, tr {
+#timeline, #timeline table, #timeline tr {
   width: 100%;
 }
 
@@ -261,10 +267,10 @@ span.name {
   min-height: 18px;
 
   text-align: center;
-  font: 10px monospace;  
+  font: 10px monospace;
   color: white;
   padding: 2px;
-  background: rgba(0, 0, 0, 0.8); 
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
   pointer-events: none;
 }
@@ -272,7 +278,7 @@ span.name {
 .extension {
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
   font-size: 8pt;
-  pointer-events: none; 
+  pointer-events: none;
   padding: 4px;
   height: 12px;
   max-width: 300px;
@@ -280,10 +286,10 @@ span.name {
   overflow: hidden;
 }
 
-.label {   
-  position: absolute;           
-  text-align: center;           
-  pointer-events: none; 
+.label {
+  position: absolute;
+  text-align: center;
+  pointer-events: none;
   box-shadow: inset 0 0 2px white;
   border-radius: 2px;
 }
@@ -297,7 +303,7 @@ span.name {
 .label td, .label td div {
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
   font-size: 8pt;
-  pointer-events: none; 
+  pointer-events: none;
   padding: 2px;
   color: white;
   overflow: hidden;
@@ -347,14 +353,14 @@ span.name {
   pointer-events: none;
 }
 
-.probe {   
-  position: absolute;           
-  text-align: center;           
-  padding: 2px;             
+.probe {
+  position: absolute;
+  text-align: center;
+  padding: 2px;
   color: white;
   background: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
-  pointer-events: none;  
+  pointer-events: none;
 }
 
 .probe table, .probe td, .probe th {

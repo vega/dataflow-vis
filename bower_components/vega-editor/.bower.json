@@ -1,12 +1,11 @@
 {
-  "name": "gh-pages",
+  "name": "vega-editor",
   "_cacheHeaders": {
-    "ETag": "\"06fadeb6e35bc2dbd3c2b7936f36fef03e390748\"",
-    "Content-Length": "3697896",
+    "ETag": "\"b7a2759f609d2d0b307199785d5ddf64f760e2bd\"",
     "Content-Type": "application/x-gzip",
-    "Content-Disposition": "attachment; filename=vega-vega-editor-06fadeb.tar.gz"
+    "Content-Disposition": "attachment; filename=vega-vega-editor-b7a2759.tar.gz"
   },
-  "_release": "e-tag:06fadeb6e",
+  "_release": "e-tag:b7a2759f6",
   "_source": "https://github.com/vega/vega-editor/tarball/gh-pages",
   "_target": "*",
   "_originalSource": "https://github.com/vega/vega-editor/tarball/gh-pages"
