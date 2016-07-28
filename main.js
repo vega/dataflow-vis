@@ -52,14 +52,17 @@ svg.call(zoom);
 var render = dagreD3.render();
 
 function tryDraw() {
-  var g = new dagreD3.graphlib.Graph({compound:true})
-    .setGraph()
-    .setDefaultEdgeLabel(function() { return {}; });
+  var g;
 
   var spec = JSON.parse(specEl.value);
   vg.parse.spec(spec, function(error, chart) {
+    g = new dagreD3.graphlib.Graph({compound:true})
+      .setGraph({})
+      .setDefaultEdgeLabel(function() { return {}; });
+
     var view = chart({el:"#vis"}).update();
     var model = view.model();
+
     buildGraph(model, g);
 
     // Set margins, if not present
